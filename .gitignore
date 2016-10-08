@@ -1,0 +1,6 @@
+# cocos2d core
+frameworks/
+
+# apk release directories
+publish/
+simulator/

@@ -4,3 +4,6 @@ frameworks/
 # apk release directories
 publish/
 simulator/
+
+# grunt
+node_modules/

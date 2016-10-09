@@ -1,16 +1,16 @@
 {
   "version": "1.0",
-  "name": "TestApp",
-  "description": "TestApp",
+  "name": "としきをなでろ",
+  "description": "としきをなでるゲーム",
   "launch_path": "/index.html",
   "icons": {
     "128": "/res/icon.png"
   },
   "developer": {
-    "name": "Cocos2d-html5",
-    "url": "http://cocos2d-x.org/"
+    "name": "honjovi",
+    "url": "https://github.com/honjovi/TestApp"
   },
-  "default_locale": "en",
+  "default_locale": "jp",
   "installs_allowed_from": [
     "*"
   ],

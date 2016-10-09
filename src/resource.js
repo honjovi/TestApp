@@ -1,5 +1,8 @@
 var res = {
-    HelloWorld_png : "res/HelloWorld.png",
+    loading_png : "res/loading.png",
+    title_png : "res/title.png",
+    toshiki_plist : "res/toshiki.plist",
+    toshiki_png : "res/toshiki.png"
 };
 
 var g_resources = [];

@@ -69,6 +69,7 @@ var Toshiki = cc.Sprite.extend({
 
     /** hide toshiki. */
     hide: function(){
+        cc.log("hide.");
         if(this._locked) return;
 
         this._strokePoint = 0;
@@ -77,6 +78,7 @@ var Toshiki = cc.Sprite.extend({
 
     /** show toshiki. */
     show: function(){
+        cc.log("show.");
         if(this._locked) return;
 
         this._changeState(this._STATE.NORMAL);
@@ -105,12 +107,15 @@ var Toshiki = cc.Sprite.extend({
 
         switch(state){
             case this._STATE.NORMAL:
+                cc.log("change state normal.");
                 this._setAnimation(this._animation.NORMAL, true);
                 break;
             case this._STATE.HIDING:
+                cc.log("change state hiding.");
                 this._setAnimation(this._animation.HIDING, true);
                 break;
             case this._STATE.STROKED:
+                cc.log("change state stroked.");
                 this._setAnimation(this._animation.STROKED, true);
                 break;
         }

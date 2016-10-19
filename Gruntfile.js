@@ -7,14 +7,15 @@ module.exports = function(grunt) {
                 src: 'src/module/*.js',
                 dest: 'src/app.js'
             }
-        },
-        
+        }
+        /*
         watch: {
             files: './src/module/*.js',
             tasks: ['concat']
         }
+        */
     });
 
-    //grunt.loadNpmTasks('grunt-contrib-concat');
-    grunt.loadNpmTasks('grunt-contrib-watch');
+    grunt.loadNpmTasks('grunt-contrib-concat');
+    //grunt.loadNpmTasks('grunt-contrib-watch');
 };

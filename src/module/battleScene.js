@@ -12,6 +12,8 @@ var BattleScene = cc.Scene.extend({
             scheduler,
 
             addScore;
+        
+        console.log("battle scene start.");
 
         this._super();
         this.score = 0;
@@ -56,9 +58,11 @@ var BattleScene = cc.Scene.extend({
         this.addChild(timeLabel, 3);
 
         //set time sucheduler
-        scheduler = cc.director.getScheduler();
-        scheduler.schedule(function(){
+        this.schedule(function(){
+            cc.log("timer entered. time is " + this.time + ".");
+            
             this.time--;
+            
             timeLabel.updateTime(this.time);
 
             if(this.time <= 0){
@@ -72,7 +76,9 @@ var BattleScene = cc.Scene.extend({
                 timeLabel.setColorRed();
                 toshikiManager.setFrequency(ToshikiManager.FREQ.HIGH);
             }
-        }.bind(this), this, 1);
+            
+            cc.log("timer exited.");
+        }, 1.0);
     },
 
     onExit: function(){

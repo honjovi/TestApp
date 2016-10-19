@@ -12,6 +12,8 @@ var BattleScene = cc.Scene.extend({
             scheduler,
 
             addScore;
+        
+        console.log("battle scene start.");
 
         this._super();
         this.score = 0;
@@ -56,9 +58,11 @@ var BattleScene = cc.Scene.extend({
         this.addChild(timeLabel, 3);
 
         //set time sucheduler
-        scheduler = cc.director.getScheduler();
-        scheduler.schedule(function(){
+        this.schedule(function(){
+            cc.log("timer entered. time is " + this.time + ".");
+            
             this.time--;
+            
             timeLabel.updateTime(this.time);
 
             if(this.time <= 0){
@@ -72,7 +76,9 @@ var BattleScene = cc.Scene.extend({
                 timeLabel.setColorRed();
                 toshikiManager.setFrequency(ToshikiManager.FREQ.HIGH);
             }
-        }.bind(this), this, 1);
+            
+            cc.log("timer exited.");
+        }, 1.0);
     },
 
     onExit: function(){
@@ -153,6 +159,8 @@ var TimeLabel = cc.LabelTTF.extend({
 
 var TitleScene = cc.Scene.extend({
     onEnter: function(){
+        console.log("title scene start.");
+        
         this._super();
         var size = cc.director.getWinSize();
         var titleSprite = cc.Sprite.create("res/title.png");
@@ -244,6 +252,7 @@ var Toshiki = cc.Sprite.extend({
 
     /** hide toshiki. */
     hide: function(){
+        cc.log("hide.");
         if(this._locked) return;
 
         this._strokePoint = 0;
@@ -252,6 +261,7 @@ var Toshiki = cc.Sprite.extend({
 
     /** show toshiki. */
     show: function(){
+        cc.log("show.");
         if(this._locked) return;
 
         this._changeState(this._STATE.NORMAL);
@@ -280,12 +290,15 @@ var Toshiki = cc.Sprite.extend({
 
         switch(state){
             case this._STATE.NORMAL:
+                cc.log("change state normal.");
                 this._setAnimation(this._animation.NORMAL, true);
                 break;
             case this._STATE.HIDING:
+                cc.log("change state hiding.");
                 this._setAnimation(this._animation.HIDING, true);
                 break;
             case this._STATE.STROKED:
+                cc.log("change state stroked.");
                 this._setAnimation(this._animation.STROKED, true);
                 break;
         }

@@ -1,5 +1,7 @@
 var TitleScene = cc.Scene.extend({
     onEnter: function(){
+        console.log("title scene start.");
+        
         this._super();
         var size = cc.director.getWinSize();
         var titleSprite = cc.Sprite.create("res/title.png");

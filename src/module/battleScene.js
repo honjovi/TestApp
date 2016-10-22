@@ -1,4 +1,4 @@
-/* global cc, Toshiki, ToshikiManager, ScoreLabel, TimeLabel, EndingScene */
+/* global cc, res, Toshiki, ToshikiManager, ScoreLabel, TimeLabel, EndingScene */
 
 var BattleScene = cc.Scene.extend({
     onEnterTransitionDidFinish: function(){
@@ -13,7 +13,7 @@ var BattleScene = cc.Scene.extend({
         this._score = 0;
         this._time = 30;
 
-        cc.spriteFrameCache.addSpriteFrames("res/toshiki.plist", "res/toshiki.png");
+        cc.spriteFrameCache.addSpriteFrames(res.toshiki_plist, res.toshiki_png);
 
         //initialize background
         windowSize = cc.director.getWinSize();
@@ -53,6 +53,10 @@ var BattleScene = cc.Scene.extend({
 
         //set time sucheduler
         this.schedule(this._updateTimer, 1.0);
+		
+		//play bgm
+		cc.audioEngine.playMusic(res.bgm_mp3, true);
+		
     },
 	
 	_updateTimer: function(){
@@ -78,9 +82,14 @@ var BattleScene = cc.Scene.extend({
 	_addScore: function(){
         this._score += 100;
         this._scoreLabel.updateScore(this._score);
+		
+		cc.audioEngine.playEffect(res.pointUp_mp3, false);
     },
 
     onExit: function(){
-        cc.spriteFrameCache.removeSpriteFramesFromFile("res/toshiki.plist");
+		this._super();
+		
+        cc.spriteFrameCache.removeSpriteFramesFromFile(res.toshiki_plist);
+		cc.audioEngine.stopMusic();
     }
 });

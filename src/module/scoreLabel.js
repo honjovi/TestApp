@@ -1,3 +1,5 @@
+/* global cc */
+
 var ScoreLabel = cc.LabelTTF.extend({
     ctor: function(x, y, score){
         this._super("" + score + "てん", "Meiryo", 80);

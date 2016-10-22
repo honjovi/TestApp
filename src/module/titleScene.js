@@ -1,4 +1,4 @@
-/* global cc, BattleScene */
+/* global cc, res, BattleScene */
 
 var TitleScene = cc.Scene.extend({
     onEnter: function(){
@@ -6,7 +6,7 @@ var TitleScene = cc.Scene.extend({
         
         this._super();
         var size = cc.director.getWinSize();
-        var titleSprite = cc.Sprite.create("res/title.png");
+        var titleSprite = cc.Sprite.create(res.title_png);
         titleSprite.setPosition(size.width/2, size.height/2);
         this.addChild(titleSprite, 0);
 
@@ -21,5 +21,14 @@ var TitleScene = cc.Scene.extend({
                 cc.director.runScene(new BattleScene());
             }
         }, this);
-    }
+		
+		cc.audioEngine.setMusicVolume(0.2);
+		cc.audioEngine.playMusic(res.title_mp3, true);
+    },
+	
+	onExit: function(){
+		this._super();
+		
+		cc.audioEngine.stopMusic();
+	}
 });

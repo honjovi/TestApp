@@ -1,4 +1,4 @@
-/* global cc */
+/* global cc, res */
 
 /**
  * Toshiki class.
@@ -19,7 +19,7 @@ var Toshiki = cc.Sprite.extend({
             STROKED: 3
         };
 
-        this._super("res/toshiki.png");
+        this._super(res.toshiki_png);
 
         /**
          * point added so that is stroked.
@@ -151,9 +151,9 @@ var Toshiki = cc.Sprite.extend({
             callFunc;
 
         this.stopAllActions();
-		cc.log("Toshiki(debug): will create animate.");
+
         animate = new cc.Animate(nextAnimation);
-		cc.log("Toshiki(debug): created animate.");
+
         if(isForever){
             action = animate.repeatForever();
         }else{
@@ -162,9 +162,8 @@ var Toshiki = cc.Sprite.extend({
             }, this, nextState);
             action = new cc.Sequence(animate.repeat(1), callFunc);
         }
-		cc.log("Toshiki(debug): created action.");
+
         this.runAction(action);
-		cc.log("Toshiki(debug): start running action.");
     },
 
     _onTouchesMoved: function(touches, event){

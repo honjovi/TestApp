@@ -1,3 +1,5 @@
+/* global cc , TitleScene */
+
 var EndingScene = cc.Scene.extend({
 
     ctor: function(score){

@@ -1,3 +1,5 @@
+/* global cc */
+
 var TimeLabel = cc.LabelTTF.extend({
     ctor: function(x, y, time){
         this._super("のこりじかん" + time, "Meiryo", 80);

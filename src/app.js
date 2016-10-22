@@ -1,4 +1,4 @@
-/* global cc, Toshiki, ToshikiManager, ScoreLabel, TimeLabel, EndingScene */
+/* global cc, res, Toshiki, ToshikiManager, ScoreLabel, TimeLabel, EndingScene */
 
 var BattleScene = cc.Scene.extend({
     onEnterTransitionDidFinish: function(){
@@ -13,7 +13,7 @@ var BattleScene = cc.Scene.extend({
         this._score = 0;
         this._time = 30;
 
-        cc.spriteFrameCache.addSpriteFrames("res/toshiki.plist", "res/toshiki.png");
+        cc.spriteFrameCache.addSpriteFrames(res.toshiki_plist, res.toshiki_png);
 
         //initialize background
         windowSize = cc.director.getWinSize();
@@ -53,6 +53,10 @@ var BattleScene = cc.Scene.extend({
 
         //set time sucheduler
         this.schedule(this._updateTimer, 1.0);
+		
+		//play bgm
+		cc.audioEngine.playMusic(res.bgm_mp3, true);
+		
     },
 	
 	_updateTimer: function(){
@@ -78,12 +82,19 @@ var BattleScene = cc.Scene.extend({
 	_addScore: function(){
         this._score += 100;
         this._scoreLabel.updateScore(this._score);
+		
+		cc.audioEngine.playEffect(res.pointUp_mp3, false);
     },
 
     onExit: function(){
-        cc.spriteFrameCache.removeSpriteFramesFromFile("res/toshiki.plist");
+		this._super();
+		
+        cc.spriteFrameCache.removeSpriteFramesFromFile(res.toshiki_plist);
+		cc.audioEngine.stopMusic();
     }
 });
+
+/* global cc , TitleScene */
 
 var EndingScene = cc.Scene.extend({
 
@@ -128,6 +139,8 @@ var EndingScene = cc.Scene.extend({
     }
 });
 
+/* global cc */
+
 var ScoreLabel = cc.LabelTTF.extend({
     ctor: function(x, y, score){
         this._super("" + score + "てん", "Meiryo", 80);
@@ -139,6 +152,8 @@ var ScoreLabel = cc.LabelTTF.extend({
         this.setString("" + score + "てん");
     }
 });
+
+/* global cc */
 
 var TimeLabel = cc.LabelTTF.extend({
     ctor: function(x, y, time){
@@ -156,7 +171,7 @@ var TimeLabel = cc.LabelTTF.extend({
     }
 });
 
-/* global cc, BattleScene */
+/* global cc, res, BattleScene */
 
 var TitleScene = cc.Scene.extend({
     onEnter: function(){
@@ -164,7 +179,7 @@ var TitleScene = cc.Scene.extend({
         
         this._super();
         var size = cc.director.getWinSize();
-        var titleSprite = cc.Sprite.create("res/title.png");
+        var titleSprite = cc.Sprite.create(res.title_png);
         titleSprite.setPosition(size.width/2, size.height/2);
         this.addChild(titleSprite, 0);
 
@@ -179,10 +194,19 @@ var TitleScene = cc.Scene.extend({
                 cc.director.runScene(new BattleScene());
             }
         }, this);
-    }
+		
+		cc.audioEngine.setMusicVolume(0.2);
+		cc.audioEngine.playMusic(res.title_mp3, true);
+    },
+	
+	onExit: function(){
+		this._super();
+		
+		cc.audioEngine.stopMusic();
+	}
 });
 
-/* global cc */
+/* global cc, res */
 
 /**
  * Toshiki class.
@@ -203,7 +227,7 @@ var Toshiki = cc.Sprite.extend({
             STROKED: 3
         };
 
-        this._super("res/toshiki.png");
+        this._super(res.toshiki_png);
 
         /**
          * point added so that is stroked.
@@ -335,9 +359,9 @@ var Toshiki = cc.Sprite.extend({
             callFunc;
 
         this.stopAllActions();
-		cc.log("Toshiki(debug): will create animate.");
+
         animate = new cc.Animate(nextAnimation);
-		cc.log("Toshiki(debug): created animate.");
+
         if(isForever){
             action = animate.repeatForever();
         }else{
@@ -346,9 +370,8 @@ var Toshiki = cc.Sprite.extend({
             }, this, nextState);
             action = new cc.Sequence(animate.repeat(1), callFunc);
         }
-		cc.log("Toshiki(debug): created action.");
+
         this.runAction(action);
-		cc.log("Toshiki(debug): start running action.");
     },
 
     _onTouchesMoved: function(touches, event){

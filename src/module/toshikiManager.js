@@ -7,6 +7,7 @@ var ToshikiManager = cc.Node.extend({
 	},
 	
 	ctor: function(){
+		cc.log("ToshikiManager: create.");
 		this._super();
 		
 		this._frequency = this.FREQ.LOW;
@@ -17,7 +18,7 @@ var ToshikiManager = cc.Node.extend({
 	},
 	
 	addToshiki: function(toshiki){
-		cc.log("ToshikiManager: add toshiki.");
+		cc.log("ToshikiManager: addToshiki.");
 		this._toshikis.push(toshiki);
 	},
 	
@@ -38,7 +39,6 @@ var ToshikiManager = cc.Node.extend({
 	},
 
 	_updateToshiki: function(){
-		cc.log("ToshikiManager: updateToshiki.");
 		var i, len;
 
 		for(i=0, len=this._toshikis.length; i<len; i++){

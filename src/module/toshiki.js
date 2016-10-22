@@ -1,3 +1,5 @@
+/* global cc */
+
 /**
  * Toshiki class.
  * @constructor Toshiki
@@ -8,6 +10,7 @@ var Toshiki = cc.Sprite.extend({
 
     /** constructor. */
     ctor: function(){
+		cc.log("Toshiki: create.");
 
         this._MAX_STROKE_POINT = 50;
         this._STATE = {
@@ -52,6 +55,12 @@ var Toshiki = cc.Sprite.extend({
             HIDING: new cc.Animation(this._hidingFrames, 0.6),
             GRAD: new cc.Animation(this._gradFrames, 0.1)
         };
+		
+		//GC回避
+		this._animation.NORMAL.retain();
+		this._animation.STROKED.retain();
+		this._animation.HIDING.retain();
+		this._animation.GRAD.retain();
 
 
         this._changeState(this._STATE.HIDING);
@@ -66,10 +75,22 @@ var Toshiki = cc.Sprite.extend({
             onTouchesEnded: this._onTouchesEnded.bind(this)
         }, this);
     },
+	
+	onExit: function(){
+		cc.log("Toshiki: exit.");
+		
+		this._super();
+		
+		//GC回避
+		this._animation.NORMAL.release();
+		this._animation.STROKED.release();
+		this._animation.HIDING.release();
+		this._animation.GRAD.release();
+	},
 
     /** hide toshiki. */
     hide: function(){
-        cc.log("hide.");
+        cc.log("Toshiki: hide.");
         if(this._locked) return;
 
         this._strokePoint = 0;
@@ -78,7 +99,7 @@ var Toshiki = cc.Sprite.extend({
 
     /** show toshiki. */
     show: function(){
-        cc.log("show.");
+        cc.log("Toshiki: show.");
         if(this._locked) return;
 
         this._changeState(this._STATE.NORMAL);
@@ -89,6 +110,7 @@ var Toshiki = cc.Sprite.extend({
      * @param {function} callback callback function.
      */
     addCallbackOnStroked: function(callback){
+		cc.log("Toshiki: addCallbackOnStroked.");
         this._onStroked = callback;
     },
 
@@ -107,15 +129,15 @@ var Toshiki = cc.Sprite.extend({
 
         switch(state){
             case this._STATE.NORMAL:
-                cc.log("change state normal.");
+                cc.log("Toshiki: change state normal.");
                 this._setAnimation(this._animation.NORMAL, true);
                 break;
             case this._STATE.HIDING:
-                cc.log("change state hiding.");
+                cc.log("Toshiki: change state hiding.");
                 this._setAnimation(this._animation.HIDING, true);
                 break;
             case this._STATE.STROKED:
-                cc.log("change state stroked.");
+                cc.log("Toshiki: change state stroked.");
                 this._setAnimation(this._animation.STROKED, true);
                 break;
         }
@@ -129,9 +151,9 @@ var Toshiki = cc.Sprite.extend({
             callFunc;
 
         this.stopAllActions();
-
+		cc.log("Toshiki(debug): will create animate.");
         animate = new cc.Animate(nextAnimation);
-
+		cc.log("Toshiki(debug): created animate.");
         if(isForever){
             action = animate.repeatForever();
         }else{
@@ -140,8 +162,9 @@ var Toshiki = cc.Sprite.extend({
             }, this, nextState);
             action = new cc.Sequence(animate.repeat(1), callFunc);
         }
-
+		cc.log("Toshiki(debug): created action.");
         this.runAction(action);
+		cc.log("Toshiki(debug): start running action.");
     },
 
     _onTouchesMoved: function(touches, event){

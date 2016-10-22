@@ -1,84 +1,83 @@
+/* global cc, Toshiki, ToshikiManager, ScoreLabel, TimeLabel, EndingScene */
+
 var BattleScene = cc.Scene.extend({
     onEnterTransitionDidFinish: function(){
-        var size,
-            backgroundLayer,
+        var windowSize,
             i, j,
             x, y,
-
-            toshiki,
-            toshikiManager,
-            scoreLabel,
-            timeLabel,
-            scheduler,
-
-            addScore;
+			toshiki;
         
-        console.log("battle scene start.");
+        cc.log("battle scene start!");
 
         this._super();
-        this.score = 0;
-        this.time = 30;
+        this._score = 0;
+        this._time = 30;
 
         cc.spriteFrameCache.addSpriteFrames("res/toshiki.plist", "res/toshiki.png");
 
         //initialize background
-        size = cc.director.getWinSize();
-        backgroundLayer = new cc.LayerColor(cc.color("#bce8ae"), size.width, size.height);
-        this.addChild(backgroundLayer,1);
+        windowSize = cc.director.getWinSize();
+        this._backgroundLayer = new cc.LayerColor(cc.color("#bce8ae"), windowSize.width, windowSize.height);
+        this.addChild(this._backgroundLayer,1);
 
         //initialize toshikis
-        toshikiManager = new ToshikiManager();
-        addScore = function(){
-            this.score += 100;
-            scoreLabel.updateScore(this.score);
-        };
+        this._toshikiManager = new ToshikiManager();
+		this.addChild(this._toshikiManager);
+		this._toshiki = [];
         for(i=0; i<3; i++){
             for(j=0; j<3; j++){
                 toshiki = new Toshiki();
-                x = size.width/2 + ((i - 1) * toshiki.width);
-                y = size.height/2 + ((j - 1) * toshiki.height);
+				this.addChild(toshiki, 2);
+				
+                x = windowSize.width/2 + ((i - 1) * toshiki.width);
+                y = windowSize.height/2 + ((j - 1) * toshiki.height);
                 toshiki.setPosition(cc.p(x, y));
-                toshiki.addCallbackOnStroked(addScore.bind(this));
-                this.addChild(toshiki, 2);
-                toshikiManager.addToshiki(toshiki);
+                toshiki.addCallbackOnStroked(this._addScore.bind(this));
+				
+                this._toshikiManager.addToshiki(toshiki);
             }
         }
-        toshikiManager.setFrequency(ToshikiManager.FREQ.LOW);
-        toshikiManager.startHideAndShow();
+        this._toshikiManager.setFrequency(this._toshikiManager.FREQ.LOW);
+        this._toshikiManager.startHideAndShow();
 
 
         //initialize scorelabel
-        scoreLabel = new ScoreLabel(0, size.height, this.score);
-        scoreLabel.setAnchorPoint(cc.p(0, 1));
-        this.addChild(scoreLabel, 3);
+        this._scoreLabel = new ScoreLabel(0, windowSize.height, this._score);
+        this._scoreLabel.setAnchorPoint(cc.p(0, 1));
+        this.addChild(this._scoreLabel, 3);
 
         //initialize timelabel
-        timeLabel = new TimeLabel(size.width, size.height, this.time);
-        timeLabel.setAnchorPoint(cc.p(1, 1));
-        this.addChild(timeLabel, 3);
+        this._timeLabel = new TimeLabel(windowSize.width, windowSize.height, this._time);
+        this._timeLabel.setAnchorPoint(cc.p(1, 1));
+        this.addChild(this._timeLabel, 3);
 
         //set time sucheduler
-        this.schedule(function(){
-            cc.log("timer entered. time is " + this.time + ".");
+        this.schedule(this._updateTimer, 1.0);
+    },
+	
+	_updateTimer: function(){
+		cc.log("BattleScene: time is " + this._time + ".");
             
-            this.time--;
-            
-            timeLabel.updateTime(this.time);
+		this._time--;
 
-            if(this.time <= 0){
-                cc.director.getScheduler().unscheduleAllForTarget(this);
-                toshikiManager.stopHideAndShow();
-                cc.director.runScene(new EndingScene(this.score));
-                return;
-            }
+		this._timeLabel.updateTime(this._time);
 
-            if(this.time <= 10){
-                timeLabel.setColorRed();
-                toshikiManager.setFrequency(ToshikiManager.FREQ.HIGH);
-            }
-            
-            cc.log("timer exited.");
-        }, 1.0);
+		if(this._time <= 0){
+			this.unscheduleAllCallbacks();
+			this._toshikiManager.stopHideAndShow();
+			cc.director.runScene(new EndingScene(this._score));
+			return;
+		}
+
+		if(this._time <= 10){
+			this._timeLabel.setColorRed();
+			this._toshikiManager.setFrequency(this._toshikiManager.FREQ.HIGH);
+		}
+	},
+	
+	_addScore: function(){
+        this._score += 100;
+        this._scoreLabel.updateScore(this._score);
     },
 
     onExit: function(){

@@ -1,84 +1,83 @@
+/* global cc, Toshiki, ToshikiManager, ScoreLabel, TimeLabel, EndingScene */
+
 var BattleScene = cc.Scene.extend({
     onEnterTransitionDidFinish: function(){
-        var size,
-            backgroundLayer,
+        var windowSize,
             i, j,
             x, y,
-
-            toshiki,
-            toshikiManager,
-            scoreLabel,
-            timeLabel,
-            scheduler,
-
-            addScore;
+			toshiki;
         
-        console.log("battle scene start.");
+        cc.log("battle scene start!");
 
         this._super();
-        this.score = 0;
-        this.time = 30;
+        this._score = 0;
+        this._time = 30;
 
         cc.spriteFrameCache.addSpriteFrames("res/toshiki.plist", "res/toshiki.png");
 
         //initialize background
-        size = cc.director.getWinSize();
-        backgroundLayer = new cc.LayerColor(cc.color("#bce8ae"), size.width, size.height);
-        this.addChild(backgroundLayer,1);
+        windowSize = cc.director.getWinSize();
+        this._backgroundLayer = new cc.LayerColor(cc.color("#bce8ae"), windowSize.width, windowSize.height);
+        this.addChild(this._backgroundLayer,1);
 
         //initialize toshikis
-        toshikiManager = new ToshikiManager();
-        addScore = function(){
-            this.score += 100;
-            scoreLabel.updateScore(this.score);
-        };
+        this._toshikiManager = new ToshikiManager();
+		this.addChild(this._toshikiManager);
+		this._toshiki = [];
         for(i=0; i<3; i++){
             for(j=0; j<3; j++){
                 toshiki = new Toshiki();
-                x = size.width/2 + ((i - 1) * toshiki.width);
-                y = size.height/2 + ((j - 1) * toshiki.height);
+				this.addChild(toshiki, 2);
+				
+                x = windowSize.width/2 + ((i - 1) * toshiki.width);
+                y = windowSize.height/2 + ((j - 1) * toshiki.height);
                 toshiki.setPosition(cc.p(x, y));
-                toshiki.addCallbackOnStroked(addScore.bind(this));
-                this.addChild(toshiki, 2);
-                toshikiManager.addToshiki(toshiki);
+                toshiki.addCallbackOnStroked(this._addScore.bind(this));
+				
+                this._toshikiManager.addToshiki(toshiki);
             }
         }
-        toshikiManager.setFrequency(ToshikiManager.FREQ.LOW);
-        toshikiManager.startHideAndShow();
+        this._toshikiManager.setFrequency(this._toshikiManager.FREQ.LOW);
+        this._toshikiManager.startHideAndShow();
 
 
         //initialize scorelabel
-        scoreLabel = new ScoreLabel(0, size.height, this.score);
-        scoreLabel.setAnchorPoint(cc.p(0, 1));
-        this.addChild(scoreLabel, 3);
+        this._scoreLabel = new ScoreLabel(0, windowSize.height, this._score);
+        this._scoreLabel.setAnchorPoint(cc.p(0, 1));
+        this.addChild(this._scoreLabel, 3);
 
         //initialize timelabel
-        timeLabel = new TimeLabel(size.width, size.height, this.time);
-        timeLabel.setAnchorPoint(cc.p(1, 1));
-        this.addChild(timeLabel, 3);
+        this._timeLabel = new TimeLabel(windowSize.width, windowSize.height, this._time);
+        this._timeLabel.setAnchorPoint(cc.p(1, 1));
+        this.addChild(this._timeLabel, 3);
 
         //set time sucheduler
-        this.schedule(function(){
-            cc.log("timer entered. time is " + this.time + ".");
+        this.schedule(this._updateTimer, 1.0);
+    },
+	
+	_updateTimer: function(){
+		cc.log("BattleScene: time is " + this._time + ".");
             
-            this.time--;
-            
-            timeLabel.updateTime(this.time);
+		this._time--;
 
-            if(this.time <= 0){
-                cc.director.getScheduler().unscheduleAllForTarget(this);
-                toshikiManager.stopHideAndShow();
-                cc.director.runScene(new EndingScene(this.score));
-                return;
-            }
+		this._timeLabel.updateTime(this._time);
 
-            if(this.time <= 10){
-                timeLabel.setColorRed();
-                toshikiManager.setFrequency(ToshikiManager.FREQ.HIGH);
-            }
-            
-            cc.log("timer exited.");
-        }, 1.0);
+		if(this._time <= 0){
+			this.unscheduleAllCallbacks();
+			this._toshikiManager.stopHideAndShow();
+			cc.director.runScene(new EndingScene(this._score));
+			return;
+		}
+
+		if(this._time <= 10){
+			this._timeLabel.setColorRed();
+			this._toshikiManager.setFrequency(this._toshikiManager.FREQ.HIGH);
+		}
+	},
+	
+	_addScore: function(){
+        this._score += 100;
+        this._scoreLabel.updateScore(this._score);
     },
 
     onExit: function(){
@@ -157,9 +156,11 @@ var TimeLabel = cc.LabelTTF.extend({
     }
 });
 
+/* global cc, BattleScene */
+
 var TitleScene = cc.Scene.extend({
     onEnter: function(){
-        console.log("title scene start.");
+    	cc.log("TitleScene: start.");
         
         this._super();
         var size = cc.director.getWinSize();
@@ -181,6 +182,8 @@ var TitleScene = cc.Scene.extend({
     }
 });
 
+/* global cc */
+
 /**
  * Toshiki class.
  * @constructor Toshiki
@@ -191,6 +194,7 @@ var Toshiki = cc.Sprite.extend({
 
     /** constructor. */
     ctor: function(){
+		cc.log("Toshiki: create.");
 
         this._MAX_STROKE_POINT = 50;
         this._STATE = {
@@ -235,6 +239,12 @@ var Toshiki = cc.Sprite.extend({
             HIDING: new cc.Animation(this._hidingFrames, 0.6),
             GRAD: new cc.Animation(this._gradFrames, 0.1)
         };
+		
+		//GC回避
+		this._animation.NORMAL.retain();
+		this._animation.STROKED.retain();
+		this._animation.HIDING.retain();
+		this._animation.GRAD.retain();
 
 
         this._changeState(this._STATE.HIDING);
@@ -249,10 +259,22 @@ var Toshiki = cc.Sprite.extend({
             onTouchesEnded: this._onTouchesEnded.bind(this)
         }, this);
     },
+	
+	onExit: function(){
+		cc.log("Toshiki: exit.");
+		
+		this._super();
+		
+		//GC回避
+		this._animation.NORMAL.release();
+		this._animation.STROKED.release();
+		this._animation.HIDING.release();
+		this._animation.GRAD.release();
+	},
 
     /** hide toshiki. */
     hide: function(){
-        cc.log("hide.");
+        cc.log("Toshiki: hide.");
         if(this._locked) return;
 
         this._strokePoint = 0;
@@ -261,7 +283,7 @@ var Toshiki = cc.Sprite.extend({
 
     /** show toshiki. */
     show: function(){
-        cc.log("show.");
+        cc.log("Toshiki: show.");
         if(this._locked) return;
 
         this._changeState(this._STATE.NORMAL);
@@ -272,6 +294,7 @@ var Toshiki = cc.Sprite.extend({
      * @param {function} callback callback function.
      */
     addCallbackOnStroked: function(callback){
+		cc.log("Toshiki: addCallbackOnStroked.");
         this._onStroked = callback;
     },
 
@@ -290,15 +313,15 @@ var Toshiki = cc.Sprite.extend({
 
         switch(state){
             case this._STATE.NORMAL:
-                cc.log("change state normal.");
+                cc.log("Toshiki: change state normal.");
                 this._setAnimation(this._animation.NORMAL, true);
                 break;
             case this._STATE.HIDING:
-                cc.log("change state hiding.");
+                cc.log("Toshiki: change state hiding.");
                 this._setAnimation(this._animation.HIDING, true);
                 break;
             case this._STATE.STROKED:
-                cc.log("change state stroked.");
+                cc.log("Toshiki: change state stroked.");
                 this._setAnimation(this._animation.STROKED, true);
                 break;
         }
@@ -312,9 +335,9 @@ var Toshiki = cc.Sprite.extend({
             callFunc;
 
         this.stopAllActions();
-
+		cc.log("Toshiki(debug): will create animate.");
         animate = new cc.Animate(nextAnimation);
-
+		cc.log("Toshiki(debug): created animate.");
         if(isForever){
             action = animate.repeatForever();
         }else{
@@ -323,8 +346,9 @@ var Toshiki = cc.Sprite.extend({
             }, this, nextState);
             action = new cc.Sequence(animate.repeat(1), callFunc);
         }
-
+		cc.log("Toshiki(debug): created action.");
         this.runAction(action);
+		cc.log("Toshiki(debug): start running action.");
     },
 
     _onTouchesMoved: function(touches, event){
@@ -362,70 +386,79 @@ var Toshiki = cc.Sprite.extend({
     }
 });
 
-var ToshikiManager = function(){
-    this.frequency = ToshikiManager.FREQ.LOW;
-    this.updateInterval = 0.1;
-    this.updateProbability = 0.2;
+/* global cc */
 
-    this.toshikis = [];
-};
+var ToshikiManager = cc.Node.extend({
+	FREQ: {
+		HIGH: 1,
+		LOW: 2
+	},
+	
+	ctor: function(){
+		this._super();
+		
+		this._frequency = this.FREQ.LOW;
+		this._updateInterval = 0.1;
+		this._updateProbability = 0.2;
 
-ToshikiManager.prototype.addToshiki = function(toshiki){
-    this.toshikis.push(toshiki);
-};
+		this._toshikis = [];
+	},
+	
+	addToshiki: function(toshiki){
+		cc.log("ToshikiManager: add toshiki.");
+		this._toshikis.push(toshiki);
+	},
+	
+	startHideAndShow: function(){
+		cc.log("ToshikiManager: startHideAndShow.");
+		this.schedule(this._updateToshiki, this._updateInterval);
+	},
 
-ToshikiManager.prototype.startHideAndShow = function(){
-    var scheduler = cc.director.getScheduler();
-    scheduler.schedule(this._updateToshiki, this, this.updateInterval);
-};
+	stopHideAndShow: function(){
+		cc.log("ToshikiManager: stopHideAndShow.");
+		this.unscheduleAllCallbacks();
+	},
 
-ToshikiManager.prototype.stopHideAndShow = function(){
-    var scheduler = cc.director.getScheduler();
-    scheduler.unscheduleAllForTarget(this);
-};
+	setFrequency: function(frequency){
+		//todo: check validation
+		cc.log("ToshikiManager: setFrequency " + frequency + ".");
+		this._frequency = frequency;
+	},
 
-ToshikiManager.prototype.setFrequency = function(frequency){
-    //todo: check validation
-    this.frequency = frequency;
-};
+	_updateToshiki: function(){
+		cc.log("ToshikiManager: updateToshiki.");
+		var i, len;
 
-ToshikiManager.prototype._updateToshiki = function(){
-    var i, len;
+		for(i=0, len=this._toshikis.length; i<len; i++){
+			if(Math.random() >= this._updateProbability) continue;
 
-    for(i=0, len=this.toshikis.length; i<len; i++){
-        if(Math.random() >= this.updateProbability) continue;
+			if(this._toshikis[i].isHiding()){
+				if(this._judgeShowing()) this._toshikis[i].show();
+				break;
+			}else{
+				if(this._judgeHiding()) this._toshikis[i].hide();
+				break;
+			}
+		}
+	},
 
-        if(this.toshikis[i].isHiding()){
-            if(this._judgeShowing()) this.toshikis[i].show();
-            break;
-        }else{
-            if(this._judgeHiding()) this.toshikis[i].hide();
-            break;
-        }
-    }
-};
+	_judgeHiding: function(){
+		var random = Math.random();
 
-ToshikiManager.prototype._judgeHiding = function(){
-    var random = Math.random();
+		if(this._frequency == this.FREQ.HIGH){
+			return random < 0.05;
+		}else{
+			return random < 0.1;
+		}
+	},
 
-    if(this.frequency == ToshikiManager.FREQ.HIGH){
-        return random < 0.05;
-    }else{
-        return random < 0.1;
-    }
-};
+	_judgeShowing: function(){
+		var random = Math.random();
 
-ToshikiManager.prototype._judgeShowing = function(){
-    var random = Math.random();
-
-    if(this.frequency == ToshikiManager.FREQ.HIGH){
-        return random < 0.2;
-    }else{
-        return random < 0.1;
-    }
-};
-
-ToshikiManager.FREQ = {
-    HIGH: 1,
-    LOW: 2,
-};
+		if(this._frequency == this.FREQ.HIGH){
+			return random < 0.2;
+		}else{
+			return random < 0.1;
+		}
+	}
+});

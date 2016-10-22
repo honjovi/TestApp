@@ -1,67 +1,76 @@
-var ToshikiManager = function(){
-    this.frequency = ToshikiManager.FREQ.LOW;
-    this.updateInterval = 0.1;
-    this.updateProbability = 0.2;
+/* global cc */
 
-    this.toshikis = [];
-};
+var ToshikiManager = cc.Node.extend({
+	FREQ: {
+		HIGH: 1,
+		LOW: 2
+	},
+	
+	ctor: function(){
+		this._super();
+		
+		this._frequency = this.FREQ.LOW;
+		this._updateInterval = 0.1;
+		this._updateProbability = 0.2;
 
-ToshikiManager.prototype.addToshiki = function(toshiki){
-    this.toshikis.push(toshiki);
-};
+		this._toshikis = [];
+	},
+	
+	addToshiki: function(toshiki){
+		cc.log("ToshikiManager: add toshiki.");
+		this._toshikis.push(toshiki);
+	},
+	
+	startHideAndShow: function(){
+		cc.log("ToshikiManager: startHideAndShow.");
+		this.schedule(this._updateToshiki, this._updateInterval);
+	},
 
-ToshikiManager.prototype.startHideAndShow = function(){
-    var scheduler = cc.director.getScheduler();
-    scheduler.schedule(this._updateToshiki, this, this.updateInterval);
-};
+	stopHideAndShow: function(){
+		cc.log("ToshikiManager: stopHideAndShow.");
+		this.unscheduleAllCallbacks();
+	},
 
-ToshikiManager.prototype.stopHideAndShow = function(){
-    var scheduler = cc.director.getScheduler();
-    scheduler.unscheduleAllForTarget(this);
-};
+	setFrequency: function(frequency){
+		//todo: check validation
+		cc.log("ToshikiManager: setFrequency " + frequency + ".");
+		this._frequency = frequency;
+	},
 
-ToshikiManager.prototype.setFrequency = function(frequency){
-    //todo: check validation
-    this.frequency = frequency;
-};
+	_updateToshiki: function(){
+		cc.log("ToshikiManager: updateToshiki.");
+		var i, len;
 
-ToshikiManager.prototype._updateToshiki = function(){
-    var i, len;
+		for(i=0, len=this._toshikis.length; i<len; i++){
+			if(Math.random() >= this._updateProbability) continue;
 
-    for(i=0, len=this.toshikis.length; i<len; i++){
-        if(Math.random() >= this.updateProbability) continue;
+			if(this._toshikis[i].isHiding()){
+				if(this._judgeShowing()) this._toshikis[i].show();
+				break;
+			}else{
+				if(this._judgeHiding()) this._toshikis[i].hide();
+				break;
+			}
+		}
+	},
 
-        if(this.toshikis[i].isHiding()){
-            if(this._judgeShowing()) this.toshikis[i].show();
-            break;
-        }else{
-            if(this._judgeHiding()) this.toshikis[i].hide();
-            break;
-        }
-    }
-};
+	_judgeHiding: function(){
+		var random = Math.random();
 
-ToshikiManager.prototype._judgeHiding = function(){
-    var random = Math.random();
+		if(this._frequency == this.FREQ.HIGH){
+			return random < 0.05;
+		}else{
+			return random < 0.1;
+		}
+	},
 
-    if(this.frequency == ToshikiManager.FREQ.HIGH){
-        return random < 0.05;
-    }else{
-        return random < 0.1;
-    }
-};
+	_judgeShowing: function(){
+		var random = Math.random();
 
-ToshikiManager.prototype._judgeShowing = function(){
-    var random = Math.random();
-
-    if(this.frequency == ToshikiManager.FREQ.HIGH){
-        return random < 0.2;
-    }else{
-        return random < 0.1;
-    }
-};
-
-ToshikiManager.FREQ = {
-    HIGH: 1,
-    LOW: 2,
-};
+		if(this._frequency == this.FREQ.HIGH){
+			return random < 0.2;
+		}else{
+			return random < 0.1;
+		}
+	}
+});

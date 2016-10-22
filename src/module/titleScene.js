@@ -1,6 +1,8 @@
+/* global cc, BattleScene */
+
 var TitleScene = cc.Scene.extend({
     onEnter: function(){
-        console.log("title scene start.");
+    	cc.log("TitleScene: start.");
         
         this._super();
         var size = cc.director.getWinSize();
